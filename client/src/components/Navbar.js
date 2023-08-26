@@ -17,10 +17,10 @@ export default function Navbar(props) {
       // console.log(await signer.getAddress())
       props.setAccount(await signer.getAddress());
       const network = await provider.getNetwork();
-      // if (network.chainId != 355113) {
-      //   alert("Please connect with Bitnifty test network");
-      //   return;
-      // }
+       if (network.chainId != 355113) {
+         alert("Please connect with Bitnifty test network");
+         return;
+       }
       const contract =await new ethers.Contract(Contract_Address,ABI.abi,signer);
       props.setWebApi({provider,signer,contract});
       props.setConnected(true);
