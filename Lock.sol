@@ -12,7 +12,8 @@ contract Marketplace is ERC721URIStorage{
 
 
         mapping(uint=>uint) private tokenPrice; // token id ==> token price
-        mapping(address=>uint256[]) private totalOwnedNfts;
+        mapping(address=>uint256[]) private totalOwnedNfts; //address ==> token Ids
+        mapping(address=>mapping(uint256=>uint256)) private access; // address==> (tokenen id=>access);
 
         event MintNFT(uint tokenId);
 
@@ -36,6 +37,10 @@ contract Marketplace is ERC721URIStorage{
             return totalOwnedNfts[owner];
         }
 
+        function isAccess(uint tid)public view returns(uint){
+            return access[msg.sender][tid];
+        }
+
         function mint(uint price, string memory _tokenUri)public {
         require(price>0,"price should be getter than 0");
         address nftOwner=msg.sender;
@@ -52,12 +57,17 @@ contract Marketplace is ERC721URIStorage{
             require(msg.sender==ownerOf(tokenId));
             return super.tokenURI(tokenId);
         }
-        
-        function tokenUri(uint256 tokenId) public payable  returns (string memory){
+        function tokenUri(uint tokenId)public view returns(string memory){
+            address owner=msg.sender;
+            uint acc=access[owner][tokenId];
+            require(acc==1,"You are not the eligible");
+            return super.tokenURI(tokenId);
+        }
+        function payForAccess(uint256 tokenId) public payable{
             uint256 price=tokenPrice[tokenId];
             require(price==msg.value,"Price should be matched");
             address owner=ownerOf(tokenId);
             payable(owner).transfer(price);
-            return super.tokenURI(tokenId);
+            access[msg.sender][tokenId]=1;
         }
 }
